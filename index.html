@@ -94,7 +94,7 @@
 
       .bg-cold {
         opacity: var(--cold-opacity);
-        filter: saturate(1.02) brightness(0.6) contrast(1.08);
+        filter: saturate(1.08) brightness(0.72) contrast(1.1);
         transform: translate3d(0, var(--bg-cold-shift), 0) scale(1.08);
       }
 
@@ -116,15 +116,22 @@
 
       .bg-vignette {
         background:
-          radial-gradient(circle at 50% 18%, rgba(0, 0, 0, 0.06), transparent 30%),
-          radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.44) 100%);
-        opacity: 0.95;
+          radial-gradient(circle at 48% 38%, rgba(255, 255, 255, calc(0.16 * var(--cold-opacity))), transparent 34%),
+          radial-gradient(circle at 50% 18%, rgba(0, 0, 0, calc(0.03 + (1 - var(--cold-opacity)) * 0.03)), transparent 30%),
+          radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, calc(0.26 + (1 - var(--cold-opacity)) * 0.18)) 100%);
+        opacity: calc(0.84 + (1 - var(--cold-opacity)) * 0.11);
       }
 
       .bg-gradient-mask {
         background:
-          linear-gradient(180deg, rgba(2, 6, 18, 0.56) 0%, rgba(6, 7, 10, 0.18) 24%, rgba(7, 6, 5, 0.26) 58%, rgba(3, 3, 3, 0.82) 100%),
-          linear-gradient(90deg, rgba(2, 2, 4, 0.24) 0%, transparent 18%, transparent 82%, rgba(2, 2, 4, 0.24) 100%);
+          linear-gradient(
+            180deg,
+            rgba(2, 6, 18, calc(0.5 + (1 - var(--cold-opacity)) * 0.06)) 0%,
+            rgba(6, 7, 10, calc(0.14 + (1 - var(--cold-opacity)) * 0.04)) 24%,
+            rgba(7, 6, 5, calc(0.18 + (1 - var(--cold-opacity)) * 0.08)) 58%,
+            rgba(3, 3, 3, calc(0.7 + (1 - var(--cold-opacity)) * 0.12)) 100%
+          ),
+          linear-gradient(90deg, rgba(2, 2, 4, 0.18) 0%, transparent 18%, transparent 82%, rgba(2, 2, 4, 0.18) 100%);
         opacity: 1;
       }
 
