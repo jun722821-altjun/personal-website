@@ -1,0 +1,905 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>王军 | AI 内容与电商运营</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              heading: ["Instrument Serif", "serif"],
+              body: ["Barlow", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+    <script>
+      window.Motion = window.FramerMotion || window.Motion;
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+
+      :root {
+        --scroll-progress: 0;
+        --cold-opacity: 1;
+        --warm-opacity: 0;
+        --warm-glow-opacity: 0;
+        --deep-shadow-opacity: 0.18;
+        --bg-cold-shift: 0px;
+        --bg-warm-shift: 0px;
+      }
+
+      body {
+        margin: 0;
+        position: relative;
+        background: #030303;
+        color: #fff;
+        overflow-x: hidden;
+        font-family: "Barlow", sans-serif;
+      }
+
+      #root {
+        position: relative;
+        isolation: isolate;
+      }
+
+      section {
+        scroll-margin-top: 120px;
+      }
+
+      .site-bg {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        overflow: hidden;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at top, rgba(78, 96, 178, 0.24), transparent 48%),
+          linear-gradient(180deg, #020205 0%, #040406 32%, #050403 66%, #020202 100%);
+      }
+
+      .site-bg::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(4, 6, 14, 0.03) 0%, rgba(4, 4, 6, 0.16) 46%, rgba(2, 2, 2, 0.55) 100%);
+      }
+
+      .bg-layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 0.3s ease-out, filter 0.3s ease-out, transform 0.3s ease-out;
+        will-change: opacity, filter, transform;
+      }
+
+      .bg-cold {
+        opacity: var(--cold-opacity);
+        filter: saturate(1.02) brightness(0.6) contrast(1.08);
+        transform: translate3d(0, var(--bg-cold-shift), 0) scale(1.08);
+      }
+
+      .bg-warm {
+        opacity: var(--warm-opacity);
+        filter: saturate(1.08) brightness(0.64) contrast(1.03);
+        transform: translate3d(0, var(--bg-warm-shift), 0) scale(1.06);
+      }
+
+      .bg-vignette,
+      .bg-gradient-mask,
+      .bg-noise,
+      .bg-warm-glow,
+      .bg-depth {
+        position: absolute;
+        inset: 0;
+        transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+      }
+
+      .bg-vignette {
+        background:
+          radial-gradient(circle at 50% 18%, rgba(0, 0, 0, 0.06), transparent 30%),
+          radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.44) 100%);
+        opacity: 0.95;
+      }
+
+      .bg-gradient-mask {
+        background:
+          linear-gradient(180deg, rgba(2, 6, 18, 0.56) 0%, rgba(6, 7, 10, 0.18) 24%, rgba(7, 6, 5, 0.26) 58%, rgba(3, 3, 3, 0.82) 100%),
+          linear-gradient(90deg, rgba(2, 2, 4, 0.24) 0%, transparent 18%, transparent 82%, rgba(2, 2, 4, 0.24) 100%);
+        opacity: 1;
+      }
+
+      .bg-depth {
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, var(--deep-shadow-opacity)) 38%, rgba(0, 0, 0, calc(var(--deep-shadow-opacity) + 0.18)) 100%);
+      }
+
+      .bg-warm-glow {
+        opacity: var(--warm-glow-opacity);
+        background:
+          radial-gradient(circle at 62% 28%, rgba(255, 197, 112, 0.26), transparent 18%),
+          radial-gradient(circle at 34% 60%, rgba(221, 146, 74, 0.18), transparent 24%),
+          radial-gradient(circle at 78% 74%, rgba(255, 190, 98, 0.14), transparent 20%);
+        filter: blur(24px);
+        mix-blend-mode: screen;
+      }
+
+      .bg-noise {
+        opacity: 0.055;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.65) 0.55px, transparent 0.7px);
+        background-size: 8px 8px;
+        mix-blend-mode: soft-light;
+      }
+
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+
+      .liquid-glass {
+        position: relative;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.1),
+          0 18px 50px rgba(0, 0, 0, 0.2);
+      }
+
+      .liquid-glass::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.4) 0%,
+          rgba(255, 255, 255, 0.08) 35%,
+          rgba(255, 255, 255, 0.04) 65%,
+          rgba(255, 255, 255, 0.35) 100%
+        );
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+
+      .liquid-glass-strong {
+        position: relative;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.16),
+          0 22px 60px rgba(0, 0, 0, 0.24);
+      }
+
+      .liquid-glass-strong::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.52) 0%,
+          rgba(255, 255, 255, 0.12) 35%,
+          rgba(255, 255, 255, 0.04) 65%,
+          rgba(255, 255, 255, 0.4) 100%
+        );
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+
+      .site-nav {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+      }
+
+      .site-nav-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px;
+      }
+
+      .site-nav-link {
+        padding: 10px 16px;
+        font-size: 15px;
+        line-height: 1;
+      }
+
+      .site-nav-cta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        font-size: 15px;
+        line-height: 1;
+      }
+
+      .site-mark {
+        position: fixed;
+        top: 20px;
+        left: 24px;
+        z-index: 9999;
+      }
+
+      .hero-grid {
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: clamp(32px, 4vw, 64px);
+      }
+
+      .hero-copy {
+        min-width: 0;
+        max-width: 720px;
+        text-shadow: 0 4px 30px rgba(0, 0, 0, 0.52);
+      }
+
+      .hero-title {
+        max-width: 720px;
+        min-width: 0;
+        white-space: normal;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-nav-card {
+        min-height: 108px;
+      }
+
+      .section-shell {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 6rem 1.5rem;
+      }
+
+      .section-shell::before {
+        content: "";
+        position: absolute;
+        inset: 0.75rem 0.25rem;
+        border-radius: 2rem;
+        background: linear-gradient(180deg, rgba(4, 4, 8, 0.16) 0%, rgba(4, 4, 6, 0.08) 50%, rgba(0, 0, 0, 0.14) 100%);
+        opacity: 0.72;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      .glass-card {
+        background: rgba(8, 8, 10, 0.2);
+      }
+
+      .section-frame {
+        position: relative;
+        z-index: 1;
+      }
+
+      .section-frame::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(7, 7, 10, 0.08) 0%, rgba(7, 7, 10, 0.22) 100%);
+        pointer-events: none;
+      }
+
+      .section-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .text-shadow-soft {
+        text-shadow: 0 4px 22px rgba(0, 0, 0, 0.45);
+      }
+
+      @media (max-width: 1023px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+          column-gap: 0;
+        }
+
+        .site-nav-pill {
+          max-width: calc(100vw - 1.5rem);
+          gap: 6px;
+          padding: 6px;
+        }
+
+        .site-nav-link,
+        .site-nav-cta {
+          padding: 9px 14px;
+          font-size: 14px;
+        }
+
+        .hero-nav-card {
+          min-height: 96px;
+        }
+
+        .bg-warm-glow {
+          filter: blur(18px);
+          opacity: calc(var(--warm-glow-opacity) * 0.72);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .site-mark {
+          left: 16px;
+        }
+
+        .hero-nav-card {
+          min-height: 86px;
+        }
+
+        .liquid-glass,
+        .liquid-glass-strong {
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+        }
+
+        .section-shell::before {
+          inset: 1rem 0.5rem;
+          opacity: 0.52;
+        }
+
+        .bg-cold,
+        .bg-warm {
+          transform: scale(1.03);
+        }
+
+        .bg-noise {
+          opacity: 0.03;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { motion } = window.Motion;
+      const { useEffect, useRef, useState } = React;
+
+      const clamp01 = (value) => Math.max(0, Math.min(1, value));
+
+      function smoothStep(start, end, value) {
+        if (end <= start) return value >= end ? 1 : 0;
+        const t = clamp01((value - start) / (end - start));
+        return t * t * (3 - 2 * t);
+      }
+
+      const NAV_LINKS = [
+        ["关于", "#about"],
+        ["经历", "#experience"],
+        ["项目", "#projects"],
+        ["能力栈", "#skills"],
+      ];
+
+      const IMPACTS = [
+        ["700%+", "抖音平台粉丝增长", "依靠自然流量完成账号增长，持续优化选题与内容表达。"],
+        ["200+", "内容发布", "覆盖短视频、图文和直播等多种内容形态。"],
+        ["600+", "客户资源整理", "建立结构化客户线索库，支持业务拓展与后续跟进。"],
+        ["4+", "电商平台搭建", "参与从选品、上架到日常运营的全流程执行。"],
+      ];
+
+            const CASE_POINTS = [
+        ["电商搭建", "主导小红书、微信小店、京东等多种电商平台的0到1搭建，覆盖选品上架到日常维护全流程，兼顾自有品牌与外部客户双线运营。"],
+        ["转化提升", "借助Claude、ChatGPT拆解竞品直播结构与用户痛点，设计差异化话术框架并持续迭代，输出完整直播转化方案。"],
+        ["客户开发", "综合运用企查查、Manus批量采集整理上下游企业信息600+条，形成潜在客户资源库，支撑草牧业联盟建设与线下业务拓展。"],
+        ["跨境研究", "运用Perplexity系统梳理跨境电商平台模式、选品逻辑与履约链路，独立完成可行性调研，为公司跨境业务规划提供决策参考。"],
+      ];
+
+      const CAPABILITIES = [
+        {
+          title: "直播话术生成器",
+          body: "输入产品类型与核心卖点，AI自动生成完整直播话术框架，覆盖开场留人、痛点引发、产品介绍、逼单转化全环节。基于真实直播运营经验设计。",
+          tags: ["内容运营", "直播转化"],
+          icon: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2Zm-7 14H7v-2h5v2Zm5-4H7v-2h10v2Zm0-4H7V7h10v2Z",
+        },
+        {
+          title: "XXX",
+          body: "xxxxxxxxx",
+          tags: ["即将上线"],
+          icon: "M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.2 14.8c-.75 0-1.41-.41-1.75-1.03L2 7H1V5h2.25l.94 2h14.86c.75 0 1.24.79.9 1.45l-2.85 5.15c-.35.63-1.01 1.02-1.73 1.02H7.2Z",
+        },
+        {
+          title: "XXXX",
+          body: "xxxxxxx",
+          tags: ["规划中"],
+          icon: "M3 17.25V21h3.75L17.8 9.95l-3.75-3.75L3 17.25ZM20.7 7.05c.4-.4.4-1.03 0-1.42l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.82Z",
+        },
+        {
+          title: "XXXXX",
+          body: "xxxxxxxx",
+          tags: ["规划中"],
+          icon: "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z",
+        },
+      ];
+
+      const SKILLS = ["Claude", "ChatGPT", "Perplexity", "Manus", "Kimi", "Codex", "Cursor", "Canva", "Sora", "Coze"];
+
+      function ArrowUpRight({ className = "h-5 w-5" }) {
+        return (
+          <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 17L17 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M7 7h10v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      }
+
+      function MaterialIcon({ path }) {
+        return (
+          <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d={path} />
+          </svg>
+        );
+      }
+
+      function FadingVideo({ src, className, style }) {
+        const ref = useRef(null);
+
+        useEffect(() => {
+          const video = ref.current;
+          if (!video) return;
+          video.play().catch(() => {});
+        }, [src]);
+
+        return <video ref={ref} src={src} autoPlay muted loop playsInline preload="auto" className={className} style={style} />;
+      }
+
+      function GlobalBackground() {
+        return (
+          <div className="site-bg" aria-hidden="true">
+            <FadingVideo
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
+              className="bg-layer bg-cold"
+            />
+            <FadingVideo
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"
+              className="bg-layer bg-warm"
+            />
+            <div className="bg-warm-glow" />
+            <div className="bg-vignette" />
+            <div className="bg-gradient-mask" />
+            <div className="bg-depth" />
+            <div className="bg-noise" />
+          </div>
+        );
+      }
+
+      function useBackgroundScrollSystem() {
+        useEffect(() => {
+          let ticking = false;
+
+          const updateBackground = () => {
+            const doc = document.documentElement;
+            const body = document.body;
+            const scrollTop = window.scrollY || doc.scrollTop || 0;
+            const maxScroll = Math.max(1, body.scrollHeight - window.innerHeight);
+            const pageProgress = clamp01(scrollTop / maxScroll);
+
+            const aboutSection = document.getElementById("about");
+            const projectsSection = document.getElementById("projects");
+            const contactSection = document.getElementById("contact");
+
+            const viewport = Math.max(window.innerHeight, 1);
+            const aboutStart = aboutSection ? Math.max(0, aboutSection.offsetTop - viewport * 0.8) : viewport * 0.45;
+            const aboutMid = aboutSection ? aboutSection.offsetTop + viewport * 0.1 : viewport * 0.95;
+            const projectsStart = projectsSection ? projectsSection.offsetTop - viewport * 0.45 : viewport * 2.2;
+            const contactStart = contactSection ? contactSection.offsetTop - viewport * 0.8 : viewport * 3.3;
+
+            const warmIntro = smoothStep(aboutStart, aboutMid, scrollTop);
+            const coldFade = smoothStep(aboutStart, projectsStart, scrollTop);
+            const deeperFade = smoothStep(projectsStart, contactStart, scrollTop);
+
+            const coldOpacity = clamp01(1 - coldFade * 0.95);
+            const warmBase = 0.34 + deeperFade * 0.18;
+            const warmOpacity = clamp01(warmIntro * 0.62 + (warmIntro > 0 ? warmBase : 0));
+            const warmGlowOpacity = clamp01(smoothStep(aboutStart + viewport * 0.15, contactStart, scrollTop) * 0.9);
+            const deepShadowOpacity = Math.min(0.68, 0.18 + deeperFade * 0.4 + pageProgress * 0.12);
+
+            doc.style.setProperty("--scroll-progress", pageProgress.toFixed(4));
+            doc.style.setProperty("--warm-opacity", warmOpacity.toFixed(4));
+            doc.style.setProperty("--cold-opacity", coldOpacity.toFixed(4));
+            doc.style.setProperty("--warm-glow-opacity", warmGlowOpacity.toFixed(4));
+            doc.style.setProperty("--deep-shadow-opacity", deepShadowOpacity.toFixed(4));
+            doc.style.setProperty("--bg-cold-shift", `${(-Math.min(scrollTop * 0.018, 24)).toFixed(2)}px`);
+            doc.style.setProperty("--bg-warm-shift", `${(-Math.min(scrollTop * 0.01, 14)).toFixed(2)}px`);
+
+            ticking = false;
+          };
+
+          const onScroll = () => {
+            if (ticking) return;
+            ticking = true;
+            window.requestAnimationFrame(updateBackground);
+          };
+
+          updateBackground();
+          window.addEventListener("scroll", onScroll, { passive: true });
+          window.addEventListener("resize", onScroll);
+
+          return () => {
+            window.removeEventListener("scroll", onScroll);
+            window.removeEventListener("resize", onScroll);
+          };
+        }, []);
+      }
+
+      function BlurText({ text, className = "" }) {
+        const [visible, setVisible] = useState(false);
+        const ref = useRef(null);
+
+        useEffect(() => {
+          const node = ref.current;
+          if (!node) return;
+          const observer = new IntersectionObserver(
+            ([entry]) => {
+              if (entry.isIntersecting) {
+                setVisible(true);
+                observer.disconnect();
+              }
+            },
+            { threshold: 0.1 }
+          );
+          observer.observe(node);
+          return () => observer.disconnect();
+        }, []);
+
+        return (
+          <p ref={ref} className={`${className} hero-title flex flex-wrap justify-start`} style={{ columnGap: "0.28em", rowGap: "0.08em" }}>
+            {text.split(" ").map((word, index) => (
+              <motion.span
+                key={`${word}-${index}`}
+                initial={{ filter: "blur(10px)", opacity: 0, y: 50 }}
+                animate={
+                  visible
+                    ? {
+                        filter: ["blur(10px)", "blur(5px)", "blur(0px)"],
+                        opacity: [0, 0.5, 1],
+                        y: [50, -5, 0],
+                      }
+                    : undefined
+                }
+                transition={{ duration: 0.7, times: [0, 0.5, 1], ease: "easeOut", delay: index * 0.09 }}
+                style={{ display: "inline-block" }}
+              >
+                {word}
+              </motion.span>
+            ))}
+          </p>
+        );
+      }
+
+      function Navbar() {
+        return (
+          <>
+            <a href="#top" className="site-mark liquid-glass flex h-14 w-14 items-center justify-center rounded-full font-heading text-2xl italic tracking-[-1px] text-white" aria-label="王军个人主页">
+              WJ
+            </a>
+            <nav className="site-nav">
+              <div className="site-nav-pill liquid-glass no-scrollbar max-w-[calc(100vw-2rem)] overflow-x-auto rounded-full md:max-w-[calc(100vw-8rem)]">
+                {NAV_LINKS.map(([label, href]) => (
+                  <a key={label} href={href} className="site-nav-link whitespace-nowrap font-body font-medium text-white/92">
+                    {label}
+                  </a>
+                ))}
+                <a href="#contact" className="site-nav-cta ml-1 shrink-0 rounded-full bg-white font-body font-medium text-black">
+                  联系我
+                  <ArrowUpRight className="h-4 w-4" />
+                </a>
+              </div>
+            </nav>
+          </>
+        );
+      }
+
+      function SectionTitle({ kicker, title, children }) {
+        return (
+          <motion.header
+            initial={{ filter: "blur(10px)", opacity: 0, y: 22 }}
+            whileInView={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <p className="mb-5 font-body text-sm text-white/80 text-shadow-soft">{kicker}</p>
+            <h2 className="text-shadow-soft whitespace-pre-line font-heading text-5xl italic leading-[0.96] tracking-[-2px] text-white md:text-6xl lg:text-[4.8rem]">{title}</h2>
+            {children && <div className="text-shadow-soft mt-5 max-w-3xl whitespace-pre-line font-body text-base font-light leading-relaxed text-white/82">{children}</div>}
+          </motion.header>
+        );
+      }
+
+      function Hero() {
+        return (
+          <section className="section-frame relative flex min-h-screen overflow-hidden">
+            <div className="section-content relative z-10 flex min-h-screen w-full flex-col">
+              <Navbar />
+              <div className="hero-grid mx-auto grid w-full max-w-[1240px] flex-1 items-center gap-8 px-6 pb-12 pt-32 md:px-10 lg:px-16">
+                <div className="hero-copy">
+                  <motion.div
+                    initial={{ filter: "blur(10px)", opacity: 0, y: 22 }}
+                    animate={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                    className="liquid-glass inline-flex items-center gap-3 rounded-full py-1 pl-1"
+                  >
+                    <span className="rounded-full bg-white px-3 py-1 font-body text-xs font-semibold text-black">Open to Work</span>
+                    <span className="pr-3 font-body text-sm text-white/90">AI 增长执行</span>
+                  </motion.div>
+
+                  <div className="mt-6">
+                    <BlurText
+                      text="Build Growth With AI"
+                      className="font-heading text-[2.7rem] italic text-white sm:text-[3.3rem] md:text-[4.1rem] lg:text-[5.1rem]"
+                    />
+                  </div>
+
+                  <motion.p
+                    initial={{ filter: "blur(10px)", opacity: 0, y: 22 }}
+                    animate={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+                    className="mt-6 max-w-2xl font-body text-base font-light leading-snug text-white md:text-lg"
+                  >
+                    用工具提效，用结果说话
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ filter: "blur(10px)", opacity: 0, y: 22 }}
+                    animate={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.7, ease: "easeOut" }}
+                    className="mt-7 flex flex-wrap items-center gap-4"
+                  >
+                    <a href="#projects" className="liquid-glass-strong flex items-center gap-2 rounded-full px-5 py-2.5 font-body text-sm font-medium text-white">
+                      查看项目成果
+                      <ArrowUpRight className="h-5 w-5" />
+                    </a>
+                  </motion.div>
+                </div>
+
+                <motion.div
+                  initial={{ filter: "blur(10px)", opacity: 0, y: 22 }}
+                  animate={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.9, ease: "easeOut" }}
+                  className="grid w-[calc(100%-2.25rem)] max-w-[390px] grid-cols-2 gap-3 self-center sm:w-full sm:max-w-[500px] sm:gap-4"
+                >
+                  {NAV_LINKS.map(([label, href]) => (
+                    <a key={label} href={href} className="hero-nav-card liquid-glass flex flex-col justify-between rounded-[1.25rem] px-4 py-4 sm:px-5">
+                      <span className="whitespace-nowrap font-heading text-3xl italic leading-none tracking-[-1px] text-white md:text-[2.2rem] lg:text-[2.35rem]">{label}</span>
+                      <span className="flex items-center gap-1.5 font-body text-sm font-medium leading-none text-white/78">
+                        进入
+                        <ArrowUpRight className="h-4 w-4" />
+                      </span>
+                    </a>
+                  ))}
+                </motion.div>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      function AboutSection() {
+        return (
+          <section id="about" className="section-frame relative min-h-screen overflow-hidden">
+            <div className="section-content">
+              <div className="section-shell">
+                <SectionTitle kicker="// About Me" title={"运营出身，\n用 AI 跑通业务"}>
+                  具备多平台内容运营、电商搭建及业务调研经验，熟练运用 ChatGPT、Claude、Perplexity、Manus 等 AI 工具辅助内容生产、竞品分析、客户资源建设与行业研究。
+                </SectionTitle>
+                <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+                  {IMPACTS.map(([number, label, detail], index) => (
+                    <motion.div
+                      key={label}
+                      initial={{ filter: "blur(10px)", opacity: 0, y: 24 }}
+                      whileInView={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.25 }}
+                      transition={{ duration: 0.75, delay: index * 0.08, ease: "easeOut" }}
+                      className="glass-card liquid-glass min-h-[190px] rounded-[1.25rem] p-6"
+                    >
+                      <div className="font-heading text-5xl italic leading-none tracking-[-1px] text-white">{number}</div>
+                      <div className="mt-5 font-body text-sm font-semibold text-white">{label}</div>
+                      <p className="mt-2 font-body text-sm font-light leading-relaxed text-white/75">{detail}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      function ExperienceSection() {
+        return (
+          <section id="experience" className="section-shell">
+            <SectionTitle kicker="// Work Experience" title="工作经历" />
+            <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+              <motion.div
+                initial={{ filter: "blur(10px)", opacity: 0, y: 22 }}
+                whileInView={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="glass-card liquid-glass rounded-[1.25rem] p-7"
+              >
+                <p className="font-body text-sm font-medium text-white/70">2025.04 - 2026.04</p>
+                <h3 className="mt-4 font-heading text-4xl italic leading-none tracking-[-1px] text-white md:text-5xl">山东派选优品供应链有限公司</h3>
+                <p className="mt-5 font-body text-sm font-light leading-relaxed text-white/85">
+                  负责山东发展集团旗下子公司“惠新草业”多平台内容运营、客户资源建设。项目特点是行业垂直、调性严肃、增长主要依靠自然流量，对选题质量和执行稳定性要求较高。
+                </p>
+              </motion.div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {CASE_POINTS.map(([title, body], index) => (
+                  <motion.article
+                    key={title}
+                    initial={{ filter: "blur(10px)", opacity: 0, y: 22 }}
+                    whileInView={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.25 }}
+                    transition={{ duration: 0.7, delay: index * 0.08, ease: "easeOut" }}
+                    className="glass-card liquid-glass rounded-[1.25rem] p-6"
+                  >
+                    <h4 className="font-heading text-3xl italic leading-none tracking-[-1px] text-white">{title}</h4>
+                    <p className="mt-4 font-body text-sm font-light leading-relaxed text-white/82">{body}</p>
+                  </motion.article>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      function ProjectsSection() {
+        return (
+          <section id="projects" className="section-shell pt-0">
+            <SectionTitle kicker="// AI Project" title="AI项目展示">
+              用ai解决真实问题
+            </SectionTitle>
+            <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {CAPABILITIES.map((item, index) => (
+                <motion.article
+                  key={item.title}
+                  initial={{ filter: "blur(10px)", opacity: 0, y: 24 }}
+                  whileInView={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.75, delay: index * 0.08, ease: "easeOut" }}
+                  className="glass-card liquid-glass flex min-h-[300px] flex-col rounded-[1.25rem] p-6"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="liquid-glass flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.75rem]">
+                      <MaterialIcon path={item.icon} />
+                    </div>
+                    <div className="flex max-w-[72%] flex-wrap justify-end gap-1.5">
+                      {item.tags.map((tag) => (
+                        <span key={tag} className="liquid-glass rounded-full px-3 py-1 font-body text-[11px] whitespace-nowrap text-white/90">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex-1" />
+                  <h3 className="mt-8 font-heading text-3xl italic leading-none tracking-[-1px] text-white md:text-[2.35rem]">{item.title}</h3>
+                  <p className="mt-4 max-w-[36ch] font-body text-sm font-light leading-relaxed text-white/86">{item.body}</p>
+                </motion.article>
+              ))}
+            </div>
+          </section>
+        );
+      }
+
+      function SkillsSection() {
+        return (
+          <section id="skills" className="section-shell pt-0">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+              <SectionTitle kicker="// Skill Stack" title="能力栈">
+                山东科技大学电子信息科学与技术本科，具备技术背景与运营落地能力，能较快理解新工具并转化到业务流程中。
+              </SectionTitle>
+              <motion.div
+                initial={{ filter: "blur(10px)", opacity: 0, y: 24 }}
+                whileInView={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="glass-card liquid-glass rounded-[1.25rem] p-7"
+              >
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div>
+                    <p className="font-body text-xs uppercase tracking-[0.2em] text-white/55">Education</p>
+                    <h3 className="mt-3 font-heading text-3xl italic tracking-[-1px] text-white">山东科技大学</h3>
+                    <p className="mt-2 font-body text-sm font-light leading-snug text-white/82">电子信息科学与技术，本科，2017.09 - 2021.06</p>
+                  </div>
+                  <div>
+                    <p className="font-body text-xs uppercase tracking-[0.2em] text-white/55">Certificates</p>
+                    <h3 className="mt-3 font-heading text-3xl italic tracking-[-1px] text-white">CET-6 / 计算机三级</h3>
+                    <p className="mt-2 font-body text-sm font-light leading-snug text-white/82">优秀学生干部、三好学生、校奖学金等。</p>
+                  </div>
+                </div>
+                <div className="mt-7 flex flex-wrap gap-2">
+                  {SKILLS.map((skill) => (
+                    <span key={skill} className="liquid-glass rounded-full px-3 py-1.5 font-body text-xs font-medium text-white/90">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          </section>
+        );
+      }
+
+      function ContactSection() {
+        return (
+          <section id="contact" className="section-shell pt-0">
+            <motion.div
+              initial={{ filter: "blur(10px)", opacity: 0, y: 24 }}
+              whileInView={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="liquid-glass grid grid-cols-1 gap-8 rounded-[1.25rem] p-7 md:grid-cols-[1fr_auto]"
+            >
+              <div>
+                <p className="font-body text-sm text-white/70">// Contact</p>
+                <h2 className="mt-4 font-heading text-5xl italic leading-none tracking-[-2px] text-white md:text-6xl">期待把增长做得更具体</h2>
+                <p className="mt-4 max-w-2xl font-body text-sm font-light leading-relaxed text-white/82">目前正在求职，欢迎交流内容运营、AI 增长、电商与业务支持相关机会。</p>
+              </div>
+              <div className="flex min-w-[260px] flex-col justify-center gap-3 font-body text-sm text-white/90">
+                <a href="mailto:1034773525@qq.com" className="liquid-glass rounded-full px-4 py-2">1034773525@qq.com</a>
+                <a href="tel:17863852823" className="liquid-glass rounded-full px-4 py-2">17863852823</a>
+                <p className="liquid-glass rounded-full px-4 py-2">济南 · 可沟通面试</p>
+              </div>
+            </motion.div>
+          </section>
+        );
+      }
+
+      function App() {
+        useBackgroundScrollSystem();
+
+        return (
+          <>
+            <GlobalBackground />
+            <main id="top" className="relative z-10">
+              <Hero />
+              <AboutSection />
+              <ExperienceSection />
+              <ProjectsSection />
+              <SkillsSection />
+              <ContactSection />
+            </main>
+          </>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
+
+
+
